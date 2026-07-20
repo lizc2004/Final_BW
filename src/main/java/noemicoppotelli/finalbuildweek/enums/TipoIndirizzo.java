@@ -1,4 +1,4 @@
-package noemicoppotelli.finalbuildweek.Enum;
+package noemicoppotelli.finalbuildweek.enums;
 
 public enum TipoIndirizzo {
     SEDE_LEGALE,
