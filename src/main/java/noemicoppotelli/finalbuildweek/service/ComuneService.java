@@ -3,9 +3,12 @@ package noemicoppotelli.finalbuildweek.service;
 
 import lombok.extern.slf4j.Slf4j;
 import noemicoppotelli.finalbuildweek.entities.Comune;
-import noemicoppotelli.finalbuildweek.entities.Provincia;
 import noemicoppotelli.finalbuildweek.exceptions.NotFoundException;
 import noemicoppotelli.finalbuildweek.repositories.ComuneRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,10 +26,17 @@ public class ComuneService {
     }
 
 
-    public Comune save(String nomeComune,
-                       String codiceProvincia,
-                       String progressivoComune,
-                       Provincia provincia) {
-
+    public Page<Comune> getAll(int page, int size, String orderBy) {
+        if (size > 20) size = 20;
+        if (size < 0) size = 10;
+        if (page < 0) page = 0;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy));
+        return this.comuneRepository.findAll(pageable);
     }
+
+    public Comune findByNome(String nome) {
+        return comuneRepository.findByNome(nome)
+                .orElseThrow(() -> new NotFoundException("Comune non trovato"));
+    }
+
 }
