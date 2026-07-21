@@ -29,9 +29,10 @@ public class Comune {
     @JoinColumn(name = "provincia_id")
     private Provincia provincia;
 
-    public Comune(String nome, String codiceProvincia, Provincia provincia) {
+    public Comune(String nome, String codiceProvincia, String progressivoComune, Provincia provincia) {
         this.nome = nome;
         this.codiceProvincia = codiceProvincia;
+        this.progressivoComune = progressivoComune;
         this.provincia = provincia;
     }
 
