@@ -2,8 +2,8 @@ package noemicoppotelli.finalbuildweek.initialazer;
 
 import noemicoppotelli.finalbuildweek.entities.Comune;
 import noemicoppotelli.finalbuildweek.entities.Provincia;
-import noemicoppotelli.finalbuildweek.repositories.ComuneRepository;
-import noemicoppotelli.finalbuildweek.repositories.ProvinciaRepository;
+import noemicoppotelli.finalbuildweek.service.ComuneService;
+import noemicoppotelli.finalbuildweek.service.ProvinciaService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
@@ -12,22 +12,24 @@ import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 @Order(2)
 public class ComuneInitializer implements CommandLineRunner {
-    private final ComuneRepository comuneRepository;
-    private final ProvinciaRepository provinciaRepository;
+    private final ComuneService comuneService;
+    private final ProvinciaService provinciaService;
 
-    public ComuneInitializer(ComuneRepository comuneRepository, ProvinciaRepository provinciaRepository) {
-        this.comuneRepository = comuneRepository;
-        this.provinciaRepository = provinciaRepository;
+    public ComuneInitializer(ComuneService comuneService, ProvinciaService provinciaService) {
+        this.comuneService = comuneService;
+        this.provinciaService = provinciaService;
     }
 
 
     @Override
     public void run(String... args) throws Exception {
-        if (comuneRepository.count() > 0) {
+        if (comuneService.existBy()) {
             return;
         }
         Resource resource =
@@ -38,6 +40,7 @@ public class ComuneInitializer implements CommandLineRunner {
                                 resource.getInputStream()
                         )
                 );
+        Map<String, Integer> progressivi = new HashMap<>();
         reader.lines()
                 .skip(1)
                 .forEach(line -> {
@@ -46,6 +49,20 @@ public class ComuneInitializer implements CommandLineRunner {
                     String progressivoComune = data[1].trim();
                     String nomeComune = data[2].trim();
                     String nomeProvincia = data[3].trim();
+                    if (progressivoComune.equals("#RIF!")) {
+                        int nuovoProgressivo = progressivi.getOrDefault(
+                                codiceProvincia,
+                                0
+                        ) + 1;
+                        progressivi.put(
+                                codiceProvincia,
+                                nuovoProgressivo
+                        );
+                        progressivoComune = String.format(
+                                "%03d",
+                                nuovoProgressivo
+                        );
+                    }
                     if (nomeProvincia.equals("Valle d'Aosta/Vallée d'Aoste")) {
                         nomeProvincia = "Aosta";
                     } else if (nomeProvincia.equals("Verbano-Cusio-Ossola")) {
@@ -68,27 +85,21 @@ public class ComuneInitializer implements CommandLineRunner {
                         nomeProvincia = "Reggio-Calabria";
                     } else if (nomeProvincia.equals("Vibo Valentia")) {
                         nomeProvincia = "Vibo-Valentia";
-                    } else if (provinciaRepository.findByName("Sud Sardegna").isEmpty()) {
+                    } else if (!provinciaService.existByNome("Sud Sardegna")) {
                         Provincia provincia = new Provincia();
                         provincia.setSigla("SU");
                         provincia.setName("Sud Sardegna");
                         provincia.setRegione("Sardegna");
-                        provinciaRepository.save(provincia);
+                        provinciaService.save(provincia);
                     }
                     String finalNomeProvincia = nomeProvincia;
-                    Provincia provincia = provinciaRepository
-                            .findByName(nomeProvincia)
-                            .orElseGet(() -> {
-                                throw new RuntimeException(
-                                        "Provincia non trovata: "
-                                                + finalNomeProvincia
-                                );
-                            });
+                    Provincia provincia = provinciaService
+                            .findByName(nomeProvincia);
                     Comune comune = new Comune(nomeComune,
                             codiceProvincia,
                             progressivoComune,
                             provincia);
-                    comuneRepository.save(comune);
+                    comuneService.save(comune);
                 });
         System.out.println("Import comuni completato!");
     }
