@@ -101,12 +101,10 @@ public class ComuneInitializer implements CommandLineRunner {
                             });
 
 
-                    Comune comune = new Comune();
-
-                    comune.setCodiceProvincia(codiceProvincia);
-                    comune.setProgressivoComune(progressivoComune);
-                    comune.setNome(nomeComune);
-                    comune.setProvincia(provincia);
+                    Comune comune = new Comune(nomeComune,
+                            codiceProvincia,
+                            progressivoComune,
+                            provincia);
 
 
                     comuneRepository.save(comune);
