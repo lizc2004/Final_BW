@@ -3,12 +3,14 @@ package noemicoppotelli.finalbuildweek.entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 @Entity
 @Getter
 @NoArgsConstructor
 @ToString
+@Setter
 public class Provincia {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,7 +19,7 @@ public class Provincia {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String sigla;
 
     @Column(nullable = false)
