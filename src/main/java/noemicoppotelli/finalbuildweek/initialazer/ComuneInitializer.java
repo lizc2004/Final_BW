@@ -1,5 +1,7 @@
-package noemicoppotelli.finalbuildweek.entities;
+package noemicoppotelli.finalbuildweek.initialazer;
 
+import noemicoppotelli.finalbuildweek.entities.Comune;
+import noemicoppotelli.finalbuildweek.entities.Provincia;
 import noemicoppotelli.finalbuildweek.repositories.ComuneRepository;
 import noemicoppotelli.finalbuildweek.repositories.ProvinciaRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -28,33 +30,22 @@ public class ComuneInitializer implements CommandLineRunner {
         if (comuneRepository.count() > 0) {
             return;
         }
-
-
         Resource resource =
                 new ClassPathResource("Data/comuni-italiani.csv");
-
-
         BufferedReader reader =
                 new BufferedReader(
                         new InputStreamReader(
                                 resource.getInputStream()
                         )
                 );
-
-
         reader.lines()
                 .skip(1)
                 .forEach(line -> {
-
-
                     String[] data = line.split(";");
-
-
                     String codiceProvincia = data[0].trim();
                     String progressivoComune = data[1].trim();
                     String nomeComune = data[2].trim();
                     String nomeProvincia = data[3].trim();
-
                     if (nomeProvincia.equals("Valle d'Aosta/Vallée d'Aoste")) {
                         nomeProvincia = "Aosta";
                     } else if (nomeProvincia.equals("Verbano-Cusio-Ossola")) {
@@ -78,41 +69,27 @@ public class ComuneInitializer implements CommandLineRunner {
                     } else if (nomeProvincia.equals("Vibo Valentia")) {
                         nomeProvincia = "Vibo-Valentia";
                     } else if (provinciaRepository.findByName("Sud Sardegna").isEmpty()) {
-
                         Provincia provincia = new Provincia();
-
                         provincia.setSigla("SU");
                         provincia.setName("Sud Sardegna");
                         provincia.setRegione("Sardegna");
-
                         provinciaRepository.save(provincia);
                     }
-
-
                     String finalNomeProvincia = nomeProvincia;
                     Provincia provincia = provinciaRepository
                             .findByName(nomeProvincia)
                             .orElseGet(() -> {
-
                                 throw new RuntimeException(
                                         "Provincia non trovata: "
                                                 + finalNomeProvincia
                                 );
                             });
-
-
                     Comune comune = new Comune(nomeComune,
                             codiceProvincia,
                             progressivoComune,
                             provincia);
-
-
                     comuneRepository.save(comune);
-
-
                 });
-
-
         System.out.println("Import comuni completato!");
     }
 }
