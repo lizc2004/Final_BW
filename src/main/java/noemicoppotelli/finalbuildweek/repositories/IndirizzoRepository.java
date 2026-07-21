@@ -3,10 +3,12 @@ package noemicoppotelli.finalbuildweek.repositories;
 import noemicoppotelli.finalbuildweek.entities.Indirizzo;
 import noemicoppotelli.finalbuildweek.enums.TipoIndirizzo;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface IndirizzoRepository extends JpaRepository<Indirizzo, Long> {
     List<Indirizzo> findByClienteId(Long clienteId);
 
