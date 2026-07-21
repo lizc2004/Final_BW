@@ -3,12 +3,14 @@ package noemicoppotelli.finalbuildweek.entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 @Entity
 @Getter
 @NoArgsConstructor
 @ToString
+@Setter
 public class Comune {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,15 +20,20 @@ public class Comune {
     private String nome;
 
     @Column(nullable = false)
-    private String codice_catastale;
+    private String codiceProvincia;
+
+    @Column(nullable = false)
+    private String progressivoComune;
 
     @ManyToOne
     @JoinColumn(name = "provincia_id")
     private Provincia provincia;
 
-    public Comune(String nome, String codice_catastale, Provincia provincia) {
+    public Comune(String nome, String codiceProvincia, Provincia provincia) {
         this.nome = nome;
-        this.codice_catastale = codice_catastale;
+        this.codiceProvincia = codiceProvincia;
         this.provincia = provincia;
     }
+
+
 }
