@@ -1,6 +1,7 @@
-package noemicoppotelli.finalbuildweek.entities;
+package noemicoppotelli.finalbuildweek.initialazer;
 
 
+import noemicoppotelli.finalbuildweek.entities.Provincia;
 import noemicoppotelli.finalbuildweek.repositories.ProvinciaRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
@@ -25,30 +26,20 @@ public class ProvinciaInitializer implements CommandLineRunner {
         if (provinciaRepository.count() == 0) {
             Resource resource =
                     new ClassPathResource("Data/province-italiane.csv");
-
-
             BufferedReader reader =
                     new BufferedReader(
                             new InputStreamReader(
                                     resource.getInputStream()
                             )
                     );
-
-
             reader.lines()
                     .skip(1)
                     .forEach(line -> {
-
                         String[] data = line.split(";");
-
-
                         Provincia provincia = new Provincia();
-
                         provincia.setSigla(data[0].trim());
                         provincia.setName(data[1].trim());
                         provincia.setRegione(data[2].trim());
-
-
                         provinciaRepository.save(provincia);
                     });
         }

@@ -10,5 +10,9 @@ public interface ProvinciaRepository extends JpaRepository<Provincia, Long> {
     Optional<Provincia> findByName(String name);
 
     Optional<Provincia> findBySigla(String sigla);
-    
+
+    boolean existsByName(String name);
+
+    boolean existsBySigla(String sigla);
+
 }
