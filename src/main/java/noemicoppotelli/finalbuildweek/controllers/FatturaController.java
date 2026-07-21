@@ -1,4 +1,4 @@
 package noemicoppotelli.finalbuildweek.controllers;
 
-public class FatturaController git {
+public class FatturaController  {
 }
