@@ -3,6 +3,8 @@ package noemicoppotelli.finalbuildweek.service;
 
 import lombok.extern.slf4j.Slf4j;
 import noemicoppotelli.finalbuildweek.entities.Comune;
+import noemicoppotelli.finalbuildweek.entities.Provincia;
+import noemicoppotelli.finalbuildweek.exceptions.BadRequestException;
 import noemicoppotelli.finalbuildweek.exceptions.NotFoundException;
 import noemicoppotelli.finalbuildweek.repositories.ComuneRepository;
 import org.springframework.data.domain.Page;
@@ -15,9 +17,11 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class ComuneService {
     private final ComuneRepository comuneRepository;
+    private final ProvinciaService provinciaService;
 
-    public ComuneService(ComuneRepository comuneRepository) {
+    public ComuneService(ComuneRepository comuneRepository, ProvinciaService provinciaService) {
         this.comuneRepository = comuneRepository;
+        this.provinciaService = provinciaService;
     }
 
     public Comune findById(Long id) {
@@ -37,6 +41,41 @@ public class ComuneService {
     public Comune findByNome(String nome) {
         return comuneRepository.findByNome(nome)
                 .orElseThrow(() -> new NotFoundException("Comune non trovato"));
+    }
+
+    public Comune save(Comune comune) {
+        if (comune.getNome() == null || comune.getNome().isBlank()) {
+            throw new BadRequestException("Il nome del comune è obbligatorio");
+        }
+        if (comune.getCodiceProvincia() == null || comune.getCodiceProvincia().isBlank()) {
+            throw new BadRequestException("Il codice provincia è obbligatorio");
+        }
+        if (comune.getProgressivoComune() == null || comune.getProgressivoComune().isBlank()) {
+            throw new BadRequestException("Il progressivo del comune è obbligatorio");
+        }
+        if (comune.getProvincia() == null) {
+            throw new BadRequestException(
+                    "La provincia è obbligatoria"
+            );
+        }
+
+        Provincia provincia = provinciaService
+                .findByName(comune.getProvincia().getName());
+
+        comune.setProvincia(provincia);
+
+        if (comuneRepository.existsByCodiceProvinciaAndProgressivoComune(
+                comune.getCodiceProvincia(),
+                comune.getProgressivoComune())) {
+
+            throw new BadRequestException("Comune già presente" + comune);
+        }
+
+        return comuneRepository.save(comune);
+    }
+
+    public boolean existBy() {
+        return this.comuneRepository.existsBy();
     }
 
 }
