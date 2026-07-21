@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import noemicoppotelli.finalbuildweek.Enum.TipoIndirizzo;
+import noemicoppotelli.finalbuildweek.enums.TipoIndirizzo;
 
 @Entity
 @Getter
