@@ -17,8 +17,8 @@ public interface ComuneRepository extends JpaRepository<Comune, Long> {
             String progressivoComune
     );
 
-    List<Comune> findByProvinciaNomeIgnoreCase(String nome);
-    
+    List<Comune> findByProvinciaNameIgnoreCase(String nome);
+
 
     boolean existsBy();
 }
