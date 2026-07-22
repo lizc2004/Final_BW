@@ -1,6 +1,7 @@
 package noemicoppotelli.finalbuildweek.service;
 
 import noemicoppotelli.finalbuildweek.entities.Cliente;
+import noemicoppotelli.finalbuildweek.exceptions.NotFoundException;
 import noemicoppotelli.finalbuildweek.payloads.ClientePayloadDTO;
 import noemicoppotelli.finalbuildweek.payloads.ClienteResponseDTO;
 import noemicoppotelli.finalbuildweek.repositories.ClienteRepository;
@@ -9,7 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-
 
 
 @Service
@@ -66,11 +66,8 @@ public class ClienteService {
     }
 
     // Cerca un cliente tramite id
-    public ClienteResponseDTO trovaPerId(Long id) {
-
-        Cliente cliente = trovaEntityPerId(id);
-
-        return convertiInResponseDTO(cliente);
+    public Cliente trovaPerId(Long id) {
+        return clienteRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
     }
 
     // Modifica un cliente esistente
