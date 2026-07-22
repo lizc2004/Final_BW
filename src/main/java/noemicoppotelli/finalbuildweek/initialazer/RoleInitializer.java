@@ -18,6 +18,9 @@ public class RoleInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        if (ruoloRepository.count() > 0) {
+            return;
+        }
         this.ruoloRepository.save(new Ruolo("ROLE_USER"));
         this.ruoloRepository.save(new Ruolo("ROLE_ADMIN"));
     }
