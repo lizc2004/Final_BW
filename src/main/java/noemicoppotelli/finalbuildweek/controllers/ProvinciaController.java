@@ -25,7 +25,7 @@ public class ProvinciaController {
     public Page<Provincia> getProvincia(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
-            @RequestParam(defaultValue = "data") String orderBy) {
+            @RequestParam(defaultValue = "regione") String orderBy) {
 
         return this.provinciaService.getAll(page, size, orderBy);
     }
