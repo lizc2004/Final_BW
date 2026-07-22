@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @Table(name = "fattura")
 @Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
 @ToString
