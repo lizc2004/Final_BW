@@ -10,6 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface IndirizzoRepository extends JpaRepository<Indirizzo, Long> {
+
     List<Indirizzo> findByClienteId(Long clienteId);
 
     Optional<Indirizzo> findByClienteIdAndTipoIndirizzo(
@@ -21,4 +22,6 @@ public interface IndirizzoRepository extends JpaRepository<Indirizzo, Long> {
             Long clienteId,
             TipoIndirizzo tipoIndirizzo
     );
+
+    long countByClienteId(Long clienteId);
 }
