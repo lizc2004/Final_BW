@@ -21,4 +21,8 @@ public class StatoFattura {
 
     @Column(nullable = false, unique = true)
     private String nome;
+
+    public StatoFattura(String nome) {
+        this.nome = nome;
+    }
 }
