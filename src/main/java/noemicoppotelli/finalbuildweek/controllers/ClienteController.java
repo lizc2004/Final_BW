@@ -43,10 +43,9 @@ public class ClienteController {
 
     // Restituisce un cliente tramite id
     @GetMapping("/{id}")
-    public ClienteResponseDTO trovaPerId(
+    public Cliente trovaPerId(
             @PathVariable Long id
     ) {
-
         return clienteService.trovaPerId(id);
     }
 
