@@ -14,7 +14,7 @@ import java.util.List;
 /*
  * Classe utilizzata per inserire automaticamente alcuni clienti di prova
  * all'avvio dell'applicazione.
- *
+
  * I clienti vengono inseriti solamente quando la tabella "cliente" è vuota.
  * In questo modo, a ogni riavvio dell'applicazione, non vengono creati duplicati.
  */
