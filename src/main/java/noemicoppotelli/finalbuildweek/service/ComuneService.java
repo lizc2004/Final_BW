@@ -81,7 +81,7 @@ public class ComuneService {
     }
 
     public List<Comune> findByProvinciaNome(String nome) {
-        return comuneRepository.findByProvinciaNomeIgnoreCase(nome);
+        return comuneRepository.findByProvinciaNameIgnoreCase(nome);
     }
 
 }
