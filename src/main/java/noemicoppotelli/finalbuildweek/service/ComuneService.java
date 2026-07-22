@@ -13,6 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @Slf4j
 public class ComuneService {
@@ -76,6 +78,10 @@ public class ComuneService {
 
     public boolean existBy() {
         return this.comuneRepository.existsBy();
+    }
+
+    public List<Comune> findByProvinciaNome(String nome) {
+        return comuneRepository.findByProvinciaNomeIgnoreCase(nome);
     }
 
 }
