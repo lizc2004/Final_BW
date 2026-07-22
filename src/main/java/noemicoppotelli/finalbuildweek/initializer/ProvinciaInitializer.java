@@ -1,4 +1,4 @@
-package noemicoppotelli.finalbuildweek.initialazer;
+package noemicoppotelli.finalbuildweek.initializer;
 
 
 import noemicoppotelli.finalbuildweek.entities.Provincia;
