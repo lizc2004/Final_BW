@@ -7,7 +7,7 @@ import lombok.*;
 @Table(name = "stato_fattura")
 @Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
 @ToString
