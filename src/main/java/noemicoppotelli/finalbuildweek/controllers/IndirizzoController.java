@@ -23,12 +23,12 @@ public class IndirizzoController {
     }
 
     // 1. GET ALL
-    // http://localhost:3001/Indirizzi?page=0&size=5&orderBy=data
+    // http://localhost:3001/Indirizzi?page=0&size=5&orderBy=localita
     // --> 200 OK ARRAY DI INDIRIZZI
     @GetMapping
     public Page<Indirizzo> getAll(@RequestParam(defaultValue = "0") int page,
                                   @RequestParam(defaultValue = "5") int size,
-                                  @RequestParam(defaultValue = "data") String orderBy) {
+                                  @RequestParam(defaultValue = "localita") String orderBy) {
         return this.indirizzoService.getAll(page, size, orderBy);
     }
 
