@@ -8,6 +8,7 @@ import noemicoppotelli.finalbuildweek.repositories.ClienteRepository;
 import noemicoppotelli.finalbuildweek.repositories.FatturaRepository;
 import noemicoppotelli.finalbuildweek.repositories.StatoFatturaRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -16,6 +17,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
+@Order(6)
 public class FatturaDataSeeder implements CommandLineRunner {
 
     private final FatturaRepository fatturaRepository;
