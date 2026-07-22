@@ -1,6 +1,9 @@
-package noemicoppotelli.finalbuildweek.cliente;
+package noemicoppotelli.finalbuildweek.controllers;
 
+import jakarta.validation.Valid;
 import noemicoppotelli.finalbuildweek.entities.Cliente;
+import noemicoppotelli.finalbuildweek.payloads.ClientePayloadDTO;
+import noemicoppotelli.finalbuildweek.payloads.ClienteResponseDTO;
 import noemicoppotelli.finalbuildweek.service.ClienteService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -13,8 +16,10 @@ import java.util.List;
 @RequestMapping("/clienti")
 public class ClienteController {
 
+    // Service che contiene la logica di business
     private final ClienteService clienteService;
 
+    // Dependency Injection
     public ClienteController(ClienteService clienteService) {
         this.clienteService = clienteService;
     }
@@ -22,24 +27,37 @@ public class ClienteController {
     // Crea un nuovo cliente
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Cliente creaCliente(
-            @RequestBody Cliente cliente
+    public ClienteResponseDTO salvaCliente(
+            @Valid @RequestBody ClientePayloadDTO payload
     ) {
-        return clienteService.salvaCliente(cliente);
+
+        return clienteService.salvaCliente(payload);
     }
 
     // Restituisce tutti i clienti
     @GetMapping
-    public List<Cliente> trovaTutti() {
+    public List<ClienteResponseDTO> trovaTutti() {
+
         return clienteService.trovaTutti();
     }
 
-    // Cerca un cliente per id
+    // Restituisce un cliente tramite id
     @GetMapping("/{id}")
     public Cliente trovaPerId(
             @PathVariable Long id
     ) {
+
         return clienteService.trovaPerId(id);
+    }
+
+    // Aggiorna i dati di un cliente
+    @PutMapping("/{id}")
+    public ClienteResponseDTO modificaCliente(
+            @PathVariable Long id,
+            @Valid @RequestBody ClientePayloadDTO payload
+    ) {
+
+        return clienteService.modificaCliente(id, payload);
     }
 
     // Elimina un cliente
@@ -48,12 +66,13 @@ public class ClienteController {
     public void eliminaCliente(
             @PathVariable Long id
     ) {
+
         clienteService.eliminaCliente(id);
     }
 
-    // Carica il logo aziendale su Cloudinary
+    // Carica il logo aziendale del cliente su Cloudinary
     @PostMapping("/{id}/logo")
-    public Cliente caricaLogo(
+    public ClienteResponseDTO caricaLogo(
             @PathVariable Long id,
             @RequestParam("file") MultipartFile file
     ) throws IOException {
