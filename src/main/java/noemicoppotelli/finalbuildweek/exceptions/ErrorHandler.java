@@ -3,6 +3,7 @@ package noemicoppotelli.finalbuildweek.exceptions;
 import noemicoppotelli.finalbuildweek.payloads.ErrorDTO;
 import noemicoppotelli.finalbuildweek.payloads.ErrorListDTO;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -11,6 +12,12 @@ import java.time.LocalDateTime;
 
 @RestControllerAdvice
 public class ErrorHandler {
+
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorDTO handleAccessDenied(AccessDeniedException ex) {
+        return new ErrorDTO("Accesso negato: permessi insufficienti", LocalDateTime.now());
+    }
 
     @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
