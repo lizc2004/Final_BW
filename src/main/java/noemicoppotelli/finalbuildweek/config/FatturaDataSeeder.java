@@ -27,7 +27,10 @@ public class FatturaDataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
 
-        if (fatturaRepository.count() > 0) return;
+        if (fatturaRepository.count() > 0) {
+            System.out.println("Seeder fatture non eseguito: nella tabella sono già presenti delle fatture.");
+            return;
+        }
 
         List<Cliente> clienti = clienteRepository.findAll();
 
@@ -36,13 +39,12 @@ public class FatturaDataSeeder implements CommandLineRunner {
             return;
         }
 
-        StatoFattura pagata = statoFatturaRepository.findByNomeIgnoreCase("PAGATA")
+        StatoFattura pagata = statoFatturaRepository
+                .findByNomeIgnoreCase("PAGATA")
                 .orElseThrow();
 
-        StatoFattura emessa = statoFatturaRepository.findByNomeIgnoreCase("EMESSA")
-                .orElseThrow();
-
-        StatoFattura inviata = statoFatturaRepository.findByNomeIgnoreCase("INVIATA")
+        StatoFattura nonPagata = statoFatturaRepository
+                .findByNomeIgnoreCase("NON PAGATA")
                 .orElseThrow();
 
         List<Fattura> fatture = List.of(
@@ -60,7 +62,7 @@ public class FatturaDataSeeder implements CommandLineRunner {
                         .data(LocalDate.of(2026, 2, 4))
                         .importo(new BigDecimal("890.50"))
                         .cliente(clienti.get(1))
-                        .statoFattura(emessa)
+                        .statoFattura(nonPagata)
                         .build(),
 
                 Fattura.builder()
@@ -68,7 +70,7 @@ public class FatturaDataSeeder implements CommandLineRunner {
                         .data(LocalDate.of(2026, 2, 21))
                         .importo(new BigDecimal("1560.00"))
                         .cliente(clienti.get(2))
-                        .statoFattura(inviata)
+                        .statoFattura(pagata)
                         .build(),
 
                 Fattura.builder()
@@ -76,7 +78,7 @@ public class FatturaDataSeeder implements CommandLineRunner {
                         .data(LocalDate.of(2026, 3, 8))
                         .importo(new BigDecimal("430.00"))
                         .cliente(clienti.get(3))
-                        .statoFattura(pagata)
+                        .statoFattura(nonPagata)
                         .build(),
 
                 Fattura.builder()
@@ -84,7 +86,7 @@ public class FatturaDataSeeder implements CommandLineRunner {
                         .data(LocalDate.of(2026, 3, 18))
                         .importo(new BigDecimal("2790.90"))
                         .cliente(clienti.get(4))
-                        .statoFattura(emessa)
+                        .statoFattura(pagata)
                         .build(),
 
                 Fattura.builder()
@@ -92,7 +94,7 @@ public class FatturaDataSeeder implements CommandLineRunner {
                         .data(LocalDate.of(2026, 4, 5))
                         .importo(new BigDecimal("980.00"))
                         .cliente(clienti.get(5))
-                        .statoFattura(inviata)
+                        .statoFattura(nonPagata)
                         .build(),
 
                 Fattura.builder()
@@ -108,7 +110,7 @@ public class FatturaDataSeeder implements CommandLineRunner {
                         .data(LocalDate.of(2026, 5, 14))
                         .importo(new BigDecimal("720.40"))
                         .cliente(clienti.get(7))
-                        .statoFattura(emessa)
+                        .statoFattura(nonPagata)
                         .build(),
 
                 Fattura.builder()
@@ -124,7 +126,7 @@ public class FatturaDataSeeder implements CommandLineRunner {
                         .data(LocalDate.of(2026, 6, 28))
                         .importo(new BigDecimal("1150.75"))
                         .cliente(clienti.get(9))
-                        .statoFattura(inviata)
+                        .statoFattura(nonPagata)
                         .build()
 
         );
