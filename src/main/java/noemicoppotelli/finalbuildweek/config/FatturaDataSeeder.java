@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import noemicoppotelli.finalbuildweek.entities.Cliente;
 import noemicoppotelli.finalbuildweek.entities.Fattura;
 import noemicoppotelli.finalbuildweek.entities.StatoFattura;
+import noemicoppotelli.finalbuildweek.exceptions.BadRequestException;
 import noemicoppotelli.finalbuildweek.repositories.ClienteRepository;
 import noemicoppotelli.finalbuildweek.repositories.FatturaRepository;
 import noemicoppotelli.finalbuildweek.repositories.StatoFatturaRepository;
@@ -41,11 +42,11 @@ public class FatturaDataSeeder implements CommandLineRunner {
 
         StatoFattura pagata = statoFatturaRepository
                 .findByNomeIgnoreCase("PAGATA")
-                .orElseThrow();
+                .orElseThrow(() -> new BadRequestException("inserire uno stato fattura valido"));
 
         StatoFattura nonPagata = statoFatturaRepository
-                .findByNomeIgnoreCase("NON PAGATA")
-                .orElseThrow();
+                .findByNomeIgnoreCase("NON_PAGATA")
+                .orElseThrow(() -> new BadRequestException("inserire uno stato fattura valido"));
 
         List<Fattura> fatture = List.of(
 
