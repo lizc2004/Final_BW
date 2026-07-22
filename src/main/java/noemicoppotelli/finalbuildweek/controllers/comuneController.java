@@ -18,7 +18,7 @@ public class comuneController {
     }
 
     // 1. GET
-    // http://localhost:3001/comuni?page=0&size=5&orderBy=data
+    // http://localhost:3001/comuni?page=0&size=5&orderBy=nome
     // --> 200 OK ARRAY DI COMUNI
 
     @GetMapping
@@ -26,7 +26,7 @@ public class comuneController {
     public Page<Comune> getComune(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
-            @RequestParam(defaultValue = "data") String orderBy) {
+            @RequestParam(defaultValue = "codiceProvincia") String orderBy) {
 
         return this.comuneService.getAll(page, size, orderBy);
     }
