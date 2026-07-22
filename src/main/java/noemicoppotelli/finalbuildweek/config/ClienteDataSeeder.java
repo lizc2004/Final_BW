@@ -5,6 +5,7 @@ import noemicoppotelli.finalbuildweek.entities.Cliente;
 import noemicoppotelli.finalbuildweek.enums.TipoCliente;
 import noemicoppotelli.finalbuildweek.repositories.ClienteRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -20,6 +21,7 @@ import java.util.List;
  */
 @Component
 @RequiredArgsConstructor
+@Order(5)
 public class ClienteDataSeeder implements CommandLineRunner {
 
     private final ClienteRepository clienteRepository;
