@@ -2,10 +2,17 @@ package noemicoppotelli.finalbuildweek.controllers;
 
 import jakarta.validation.Valid;
 import noemicoppotelli.finalbuildweek.entities.Cliente;
+import noemicoppotelli.finalbuildweek.entities.Indirizzo;
+import noemicoppotelli.finalbuildweek.exceptions.ValidationException;
 import noemicoppotelli.finalbuildweek.payloads.ClientePayloadDTO;
 import noemicoppotelli.finalbuildweek.payloads.ClienteResponseDTO;
+import noemicoppotelli.finalbuildweek.payloads.IndirizzoDTO;
 import noemicoppotelli.finalbuildweek.service.ClienteService;
+import noemicoppotelli.finalbuildweek.service.IndirizzoService;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,19 +25,31 @@ public class ClienteController {
 
     // Service che contiene la logica di business
     private final ClienteService clienteService;
+    private final IndirizzoService indirizzoService;
 
     // Dependency Injection
-    public ClienteController(ClienteService clienteService) {
+    public ClienteController(ClienteService clienteService, IndirizzoService indirizzoService) {
         this.clienteService = clienteService;
+        this.indirizzoService = indirizzoService;
     }
 
     // Crea un nuovo cliente
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ClienteResponseDTO salvaCliente(
-            @Valid @RequestBody ClientePayloadDTO payload
+            @Valid @RequestBody ClientePayloadDTO payload,
+            BindingResult validationResult
     ) {
+        if (validationResult.hasErrors()) {
+            List<String> errorsList = validationResult
+                    .getFieldErrors()
+                    .stream()
+                    .map(fieldError -> fieldError.getDefaultMessage())
+                    .toList();
 
+            throw new ValidationException(errorsList);
+        }
         return clienteService.salvaCliente(payload);
     }
 
@@ -43,6 +62,7 @@ public class ClienteController {
 
     // Restituisce un cliente tramite id
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public Cliente trovaPerId(
             @PathVariable Long id
     ) {
@@ -51,6 +71,7 @@ public class ClienteController {
 
     // Aggiorna i dati di un cliente
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ClienteResponseDTO modificaCliente(
             @PathVariable Long id,
             @Valid @RequestBody ClientePayloadDTO payload
@@ -61,6 +82,7 @@ public class ClienteController {
 
     // Elimina un cliente
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void eliminaCliente(
             @PathVariable Long id
@@ -77,5 +99,35 @@ public class ClienteController {
     ) throws IOException {
 
         return clienteService.caricaLogo(id, file);
+    }
+
+
+    //crea indirizzo partendo da cliente
+    @PostMapping("/{clienteId}/indirizzi")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
+
+    public Indirizzo saveIndirizzo(@PathVariable Long clienteId,
+                                   @Valid @RequestBody IndirizzoDTO body,
+                                   BindingResult validationResult) throws BadRequestException {
+        if (validationResult.hasErrors()) {
+            List<String> errorsList = validationResult
+                    .getFieldErrors()
+                    .stream()
+                    .map(fieldError -> fieldError.getDefaultMessage())
+                    .toList();
+
+            throw new ValidationException(errorsList);
+        }
+        return indirizzoService.save(clienteId, body);
+    }
+
+
+    //recupera indirizzi del cliente
+    @GetMapping("/{clienteId}/indirizzi")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public List<Indirizzo> findIndirizzi(
+            @PathVariable Long clienteId) {
+        return indirizzoService.findByCliente(clienteId);
     }
 }
