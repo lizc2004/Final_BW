@@ -2,17 +2,10 @@ package noemicoppotelli.finalbuildweek.controllers;
 
 import jakarta.validation.Valid;
 import noemicoppotelli.finalbuildweek.entities.Cliente;
-import noemicoppotelli.finalbuildweek.entities.Indirizzo;
-import noemicoppotelli.finalbuildweek.exceptions.ValidationException;
 import noemicoppotelli.finalbuildweek.payloads.ClientePayloadDTO;
 import noemicoppotelli.finalbuildweek.payloads.ClienteResponseDTO;
-import noemicoppotelli.finalbuildweek.payloads.IndirizzoDTO;
 import noemicoppotelli.finalbuildweek.service.ClienteService;
-import noemicoppotelli.finalbuildweek.service.IndirizzoService;
-import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
