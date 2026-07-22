@@ -6,6 +6,8 @@ import noemicoppotelli.finalbuildweek.enums.TipoCliente;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "cliente")
@@ -64,6 +66,25 @@ public class Cliente {
 
     @Column(name = "logo_aziendale")
     private String logoAziendale;
+
+    /*
+     * Relazione inversa con gli indirizzi del cliente.
+     *
+     * mappedBy indica che la relazione è gestita dal campo
+     * "cliente" presente nell'entity Indirizzo.
+     *
+     * @Builder.Default è necessario perché Cliente utilizza @Builder:
+     * senza questa annotazione la lista potrebbe essere null
+     * quando il cliente viene creato tramite builder.
+     */
+    @OneToMany(
+            mappedBy = "cliente",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @Builder.Default
+    @ToString.Exclude
+    private List<Indirizzo> indirizzi = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_cliente", nullable = false)
