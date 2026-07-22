@@ -11,10 +11,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
+/*
  * Classe utilizzata per inserire automaticamente alcuni clienti di prova
  * all'avvio dell'applicazione.
- *
+
  * I clienti vengono inseriti solamente quando la tabella "cliente" è vuota.
  * In questo modo, a ogni riavvio dell'applicazione, non vengono creati duplicati.
  */
@@ -24,7 +24,7 @@ public class ClienteDataSeeder implements CommandLineRunner {
 
     private final ClienteRepository clienteRepository;
 
-    /**
+    /*
      * Questo metodo viene eseguito automaticamente da Spring Boot
      * dopo l'avvio dell'applicazione.
      */
