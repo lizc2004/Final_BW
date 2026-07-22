@@ -5,6 +5,7 @@ import noemicoppotelli.finalbuildweek.entities.Indirizzo;
 import noemicoppotelli.finalbuildweek.exceptions.ValidationException;
 import noemicoppotelli.finalbuildweek.payloads.IndirizzoDTO;
 import noemicoppotelli.finalbuildweek.service.IndirizzoService;
+import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -52,7 +53,7 @@ public class IndirizzoController {
     public Indirizzo update(
             @PathVariable Long indirizzoId,
             @Valid @RequestBody IndirizzoDTO body,
-            BindingResult validation) {
+            BindingResult validation) throws BadRequestException {
 
         if (validation.hasErrors()) {
 
