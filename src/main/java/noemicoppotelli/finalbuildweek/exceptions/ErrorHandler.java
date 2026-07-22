@@ -3,12 +3,16 @@ package noemicoppotelli.finalbuildweek.exceptions;
 import noemicoppotelli.finalbuildweek.payloads.ErrorDTO;
 import noemicoppotelli.finalbuildweek.payloads.ErrorListDTO;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestControllerAdvice
 public class ErrorHandler {
@@ -49,4 +53,42 @@ public class ErrorHandler {
     public ErrorDTO handleUnauthorized(UnauthorizedException ex) {
         return new ErrorDTO(ex.getMessage(), LocalDateTime.now());
     }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorListDTO handleValidationException(
+            MethodArgumentNotValidException ex
+    ) {
+
+        List<String> errors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error ->
+                        error.getField() + ": " + error.getDefaultMessage()
+                )
+                .toList();
+
+
+        return new ErrorListDTO(
+                "Errore di validazione", LocalDateTime.now(), errors);
+    }
+
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorListDTO> handleBadCredentials(
+            BadCredentialsException ex
+    ) {
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(
+                        new ErrorListDTO(
+                                "Credenziali non valide",
+                                LocalDateTime.now(),
+                                List.of(ex.getMessage())
+                        )
+                );
+    }
+
 }
+
