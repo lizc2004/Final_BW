@@ -35,7 +35,7 @@ public class AuthService {
         if (utenteRepository.existsByEmail(request.getEmail())) {
             throw new BadRequestException("Email già in uso!");
         }
-        
+
         String nomeRuolo = (request.getRuolo() != null && !request.getRuolo().isBlank())
                 ? request.getRuolo()
                 : "ROLE_USER";
@@ -46,7 +46,7 @@ public class AuthService {
 
         final String ruoloFinale = nomeRuolo;
         Ruolo ruoloAssegnato = ruoloRepository.findByNome(ruoloFinale)
-                .orElseThrow(() -> new BadRequestException("Il ruolo selezionato non esiste!"));
+                .orElseThrow(() -> new BadRequestException("inserire un ruolo valido!"));
 
         Utente utente = Utente.builder()
                 .username(request.getUsername())
