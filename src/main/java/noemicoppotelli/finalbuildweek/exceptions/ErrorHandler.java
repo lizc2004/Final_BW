@@ -2,11 +2,12 @@ package noemicoppotelli.finalbuildweek.exceptions;
 
 import noemicoppotelli.finalbuildweek.payloads.ErrorDTO;
 import noemicoppotelli.finalbuildweek.payloads.ErrorListDTO;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -95,6 +96,17 @@ public class ErrorHandler {
                                 List.of(ex.getMessage())
                         )
                 );
+    }
+
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorListDTO handleDataIntegrityViolation(
+            DataIntegrityViolationException ex
+    ) {
+        return new ErrorListDTO(
+                "Violazione dei vincoli del database", LocalDateTime.now(), List.of(ex.getMessage())
+        );
     }
 
 
