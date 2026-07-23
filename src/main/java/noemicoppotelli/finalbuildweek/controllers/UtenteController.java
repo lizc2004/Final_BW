@@ -36,9 +36,10 @@ public class UtenteController {
     @GetMapping
     public Page<Utente> getAllUtenti(@RequestParam(defaultValue = "0") int page,
                                      @RequestParam(defaultValue = "5") int size,
-                                     @RequestParam(defaultValue = "cognome") String orderBy) {
-        return this.utenteService.getAll(page, size, orderBy);
+                                     @RequestParam(required = false) String nome) {
+        return this.utenteService.getAllPerNome(page, size, nome);
     }
+
 
     // PUT /utenti/me
 
@@ -111,4 +112,6 @@ public class UtenteController {
     ) {
         return utente;
     }
+
+
 }
