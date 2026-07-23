@@ -150,4 +150,26 @@ public class UtenteService {
         utenteRepository.save(utente);
     }
 
+
+    public Page<Utente> getAllPerNome(
+            int page,
+            int size,
+            String nome
+    ) {
+        if (size > 20) size = 20;
+        if (size < 0) size = 10;
+        if (page < 0) page = 0;
+
+        Pageable pageable = PageRequest.of(page, size,
+                Sort.by("id").ascending()
+        );
+        if (nome != null && !nome.isBlank()) {
+            return utenteRepository
+                    .findByNomeContainingIgnoreCase(nome, pageable);
+        }
+
+
+        return utenteRepository.findAll(pageable);
+    }
+
 }
