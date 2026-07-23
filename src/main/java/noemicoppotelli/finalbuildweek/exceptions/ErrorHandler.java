@@ -9,6 +9,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -80,6 +81,12 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorDTO handleMessageNotReadable(HttpMessageNotReadableException ex) {
         return new ErrorDTO("Il corpo della richiesta è mancante o malformato", LocalDateTime.now());
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDTO handleMissingPart(MissingServletRequestPartException ex) {
+        return new ErrorDTO("Parte mancante nella richiesta: " + ex.getRequestPartName(), LocalDateTime.now());
     }
 
     @ExceptionHandler(BadCredentialsException.class)
