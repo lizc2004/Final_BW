@@ -7,8 +7,10 @@ import noemicoppotelli.finalbuildweek.exceptions.BadRequestException;
 import noemicoppotelli.finalbuildweek.exceptions.ValidationException;
 import noemicoppotelli.finalbuildweek.payloads.ClientePayloadDTO;
 import noemicoppotelli.finalbuildweek.payloads.ClienteResponseDTO;
+import noemicoppotelli.finalbuildweek.payloads.EmailRequestDTO;
 import noemicoppotelli.finalbuildweek.payloads.IndirizzoDTO;
 import noemicoppotelli.finalbuildweek.service.ClienteService;
+import noemicoppotelli.finalbuildweek.service.EmailService;
 import noemicoppotelli.finalbuildweek.service.IndirizzoService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -32,15 +34,19 @@ public class ClienteController {
     // Service che gestisce la logica relativa agli indirizzi.
     private final IndirizzoService indirizzoService;
 
+    private final EmailService emailService;
+
     /*
      * Dependency Injection tramite costruttore.
      */
     public ClienteController(
             ClienteService clienteService,
-            IndirizzoService indirizzoService
+            IndirizzoService indirizzoService,
+            EmailService emailService
     ) {
         this.clienteService = clienteService;
         this.indirizzoService = indirizzoService;
+        this.emailService = emailService;
     }
 
     /*
@@ -340,5 +346,22 @@ public class ClienteController {
 
         // Lancia l'eccezione personalizzata.
         throw new ValidationException(errorsList);
+    }
+
+    // POST /clienti/{id}/email
+    @PostMapping("/{id}/email")
+    @PreAuthorize("hasRole('ADMIN')")
+    @ResponseStatus(HttpStatus.OK)
+    public void sendEmailToCliente(
+            @PathVariable Long id,
+            @Valid @RequestBody EmailRequestDTO body
+    ) {
+        Cliente cliente = clienteService.trovaPerId(id);
+
+        String destinatario = cliente.getEmailContatto() != null
+                ? cliente.getEmailContatto()
+                : cliente.getEmail();
+
+        emailService.inviaEmail(destinatario, body.oggetto(), body.messaggio());
     }
 }
