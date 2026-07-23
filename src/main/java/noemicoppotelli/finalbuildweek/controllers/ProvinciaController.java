@@ -45,7 +45,7 @@ public class ProvinciaController {
     // http://localhost:3001/provincie/sigla/{sigla}
     // --> 200 OK PROVINCIA TROVATO
     @GetMapping("/sigla/{sigla}")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public Provincia findBySigla(
             @PathVariable String sigla) {
 
@@ -57,7 +57,7 @@ public class ProvinciaController {
     // http://localhost:3001/provincie/nome/{nome}
     // --> 200 OK PROVINCIA TROVATO
     @GetMapping("/nome/{nome}")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public Provincia findByNome(
             @PathVariable String nome) {
         return provinciaService.findByName(nome);
