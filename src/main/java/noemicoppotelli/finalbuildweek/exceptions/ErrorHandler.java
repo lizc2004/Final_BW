@@ -100,7 +100,7 @@ public class ErrorHandler {
 
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorListDTO handleDataIntegrityViolation(
             DataIntegrityViolationException ex
     ) {
@@ -108,7 +108,5 @@ public class ErrorHandler {
                 "Violazione dei vincoli del database", LocalDateTime.now(), List.of(ex.getMessage())
         );
     }
-
-
 }
 
