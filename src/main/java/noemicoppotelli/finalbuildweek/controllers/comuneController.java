@@ -22,7 +22,7 @@ public class comuneController {
     // --> 200 OK ARRAY DI COMUNI
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public Page<Comune> getComune(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
@@ -36,7 +36,7 @@ public class comuneController {
     // --> 200 OK COMUNE TROVATO
 
     @GetMapping("/{comuneId}")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public Comune getById(
             @PathVariable Long comuneId) {
 
@@ -47,7 +47,7 @@ public class comuneController {
     // http://localhost:3001/comuni/provincia/{provinciaNome}
     // --> 200 OK COMUNE TROVATO
     @GetMapping("/provincia/{provinciaNome}")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public List<Comune> findByProvincia(
             @PathVariable String provinciaNome) {
         return comuneService.findByProvinciaNome(provinciaNome);

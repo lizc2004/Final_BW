@@ -59,7 +59,7 @@ public class ClienteController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ClienteResponseDTO salvaCliente(
             @Valid @RequestBody ClientePayloadDTO payload,
             BindingResult validationResult
@@ -78,7 +78,7 @@ public class ClienteController {
      * GET /clienti
      */
     @GetMapping
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public List<ClienteResponseDTO> trovaTutti() {
 
         return clienteService.trovaTutti();
@@ -98,7 +98,7 @@ public class ClienteController {
      * &fatturatoMin=10000
      */
     @GetMapping("/filtro")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public List<ClienteResponseDTO> filtraClienti(
 
             // Parte della ragione sociale.
@@ -181,7 +181,7 @@ public class ClienteController {
      * &direzione=asc
      */
     @GetMapping("/ordinamento")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole( 'ADMIN')")
     public List<ClienteResponseDTO> ordinaClienti(
 
             @RequestParam
@@ -204,7 +204,7 @@ public class ClienteController {
      * GET /clienti/{id}
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole( 'ADMIN')")
     public Cliente trovaPerId(
             @PathVariable Long id
     ) {
@@ -306,7 +306,7 @@ public class ClienteController {
      * GET /clienti/{clienteId}/indirizzi
      */
     @GetMapping("/{clienteId}/indirizzi")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole( 'ADMIN')")
     public List<Indirizzo> trovaIndirizzi(
             @PathVariable Long clienteId
     ) {
