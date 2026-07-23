@@ -8,6 +8,7 @@ import noemicoppotelli.finalbuildweek.payloads.UtenteResponseDTO;
 import noemicoppotelli.finalbuildweek.payloads.UtenteUpdateDTO;
 import noemicoppotelli.finalbuildweek.service.UtenteService;
 import org.apache.coyote.BadRequestException;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -32,6 +33,12 @@ public class UtenteController {
                 found.getAvatar(), found.getRuoli());
     }
 
+    @GetMapping
+    public Page<Utente> getAllUtenti(@RequestParam(defaultValue = "0") int page,
+                                     @RequestParam(defaultValue = "5") int size,
+                                     @RequestParam(defaultValue = "cognome") String orderBy) {
+        return this.utenteService.getAll(page, size, orderBy);
+    }
 
     // PUT /utenti/me
 
