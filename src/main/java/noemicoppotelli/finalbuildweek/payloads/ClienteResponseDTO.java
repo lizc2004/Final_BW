@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 
-
 public record ClienteResponseDTO(
 
         Long id,
@@ -27,4 +26,8 @@ public record ClienteResponseDTO(
         TipoCliente tipoCliente,
         String provincia
 ) {
+
+
+    public record ClienteResponseEmailDTO(Long id, String email, String ragioneSociale) {
+    }
 }
