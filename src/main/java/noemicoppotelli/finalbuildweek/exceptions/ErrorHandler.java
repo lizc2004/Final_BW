@@ -10,6 +10,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -94,6 +95,12 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     public ErrorDTO handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
         return new ErrorDTO("Metodo HTTP " + ex.getMethod() + " non supportato per questo endpoint", LocalDateTime.now());
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDTO handleMissingParameter(MissingServletRequestParameterException ex) {
+        return new ErrorDTO("Parametro obbligatorio mancante: " + ex.getParameterName(), LocalDateTime.now());
     }
 
     @ExceptionHandler(BadCredentialsException.class)
