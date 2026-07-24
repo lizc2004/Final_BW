@@ -13,6 +13,9 @@ import noemicoppotelli.finalbuildweek.payloads.ClientePayloadDTO;
 import noemicoppotelli.finalbuildweek.payloads.ClienteResponseDTO;
 import noemicoppotelli.finalbuildweek.repositories.ClienteRepository;
 import noemicoppotelli.finalbuildweek.specifications.ClienteSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -26,15 +29,10 @@ import java.util.List;
 @Service
 public class ClienteService {
 
-    // Repository utilizzato per comunicare con il database.
     private final ClienteRepository clienteRepository;
 
-    // Service utilizzato per caricare le immagini su Cloudinary.
     private final CloudinaryService cloudinaryService;
 
-    /*
-     * Dependency Injection tramite costruttore.
-     */
     public ClienteService(
             ClienteRepository clienteRepository,
             CloudinaryService cloudinaryService
@@ -43,17 +41,12 @@ public class ClienteService {
         this.cloudinaryService = cloudinaryService;
     }
 
-    /*
-     * Crea e salva un nuovo cliente.
-     */
+
     public ClienteResponseDTO salvaCliente(
             ClientePayloadDTO payload
     ) {
 
-        /*
-         * Converte il DTO ricevuto dal controller
-         * in una nuova entity Cliente.
-         */
+
         Cliente nuovoCliente = Cliente.builder()
                 .ragioneSociale(payload.ragioneSociale())
                 .email(payload.email())
@@ -76,31 +69,66 @@ public class ClienteService {
                 .tipoCliente(payload.tipoCliente())
                 .build();
 
-        // Salva il cliente nel database.
         Cliente clienteSalvato =
                 clienteRepository.save(nuovoCliente);
 
-        // Restituisce il DTO del cliente salvato.
         return convertiInResponseDTO(clienteSalvato);
     }
 
-    /*
-     * Restituisce tutti i clienti presenti nel database.
-     */
-    public List<ClienteResponseDTO> trovaTutti() {
 
-        return clienteRepository.findAll()
-                .stream()
-                .map(this::convertiInResponseDTO)
-                .toList();
+    public Page<ClienteResponseDTO> trovaTutti(
+            int page,
+            int size,
+            String sortBy,
+            String direction
+    ) {
+
+        if (page < 0) {
+            throw new BadRequestException(
+                    "Il numero della pagina non può essere negativo."
+            );
+        }
+
+        if (size <= 0) {
+            throw new BadRequestException(
+                    "Il numero di clienti per pagina deve essere maggiore di zero."
+            );
+        }
+
+        String campoNormalizzato =
+                normalizzaCampo(sortBy);
+
+        String campoEntity =
+                convertiCampoOrdinamento(
+                        campoNormalizzato
+                );
+
+        Sort.Direction sortDirection =
+                convertiDirezioneOrdinamento(direction);
+
+        Sort.Order ordine =
+                new Sort.Order(
+                        sortDirection,
+                        campoEntity
+                );
+
+        if (campoEntity.equals("ragioneSociale")) {
+            ordine = ordine.ignoreCase();
+        }
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(ordine)
+        );
+
+
+        return clienteRepository
+                .findAll(pageable)
+                .map(this::convertiInResponseDTO);
     }
 
-    /*
-     * Cerca i clienti applicando dinamicamente
-     * soltanto i filtri ricevuti.
-     *
-     * Tutte le condizioni vengono combinate con AND.
-     */
+
     public List<ClienteResponseDTO> filtraClienti(
             String ragioneSociale,
             BigDecimal fatturatoMin,
@@ -111,14 +139,6 @@ public class ClienteService {
             LocalDateTime dataUltimoContattoA
     ) {
 
-        /*
-         * La prima Specification rappresenta il filtro
-         * sulla ragione sociale.
-         *
-         * Gli altri filtri vengono concatenati con and().
-         * Se un parametro è null, la relativa Specification
-         * restituisce una condizione sempre vera.
-         */
         Specification<Cliente> specification =
                 ClienteSpecification
                         .ragioneSocialeContiene(ragioneSociale)
@@ -159,53 +179,25 @@ public class ClienteService {
                                         )
                         );
 
-        /*
-         * Esegue la query dinamica e converte
-         * le entity trovate in DTO.
-         */
+
         return clienteRepository.findAll(specification)
                 .stream()
                 .map(this::convertiInResponseDTO)
                 .toList();
     }
 
-    /*
-     * Ordina i clienti in base al campo
-     * e alla direzione ricevuti.
-     *
-     * Campi disponibili:
-     * - nome
-     * - fatturato
-     * - dataInserimento
-     * - dataUltimoContatto
-     * - provincia
-     *
-     * Direzioni disponibili:
-     * - asc
-     * - desc
-     */
     public List<ClienteResponseDTO> ordinaClienti(
             String campo,
             String direzione
     ) {
 
-        // Normalizza il nome del campo ricevuto.
         String campoNormalizzato =
                 normalizzaCampo(campo);
 
-        // Converte asc o desc nell'enum di Spring.
         Sort.Direction sortDirection =
                 convertiDirezioneOrdinamento(direzione);
 
-        /*
-         * La provincia non è un attributo diretto di Cliente.
-         *
-         * Il percorso da seguire è:
-         * Cliente → Indirizzo → Comune → Provincia.
-         *
-         * Per questo motivo viene utilizzata
-         * una Specification con i join necessari.
-         */
+
         if (campoNormalizzato.equals("provincia")) {
 
             Specification<Cliente> ordinamentoProvincia =
@@ -220,10 +212,7 @@ public class ClienteService {
                     .toList();
         }
 
-        /*
-         * Per gli altri campi è sufficiente
-         * utilizzare Sort di Spring Data.
-         */
+
         String campoEntity =
                 convertiCampoOrdinamento(
                         campoNormalizzato
@@ -235,10 +224,6 @@ public class ClienteService {
                         campoEntity
                 );
 
-        /*
-         * Quando ordiniamo per ragione sociale,
-         * ignoriamo maiuscole e minuscole.
-         */
         if (campoEntity.equals("ragioneSociale")) {
             ordine = ordine.ignoreCase();
         }
@@ -251,12 +236,7 @@ public class ClienteService {
                 .toList();
     }
 
-    /*
-     * Restituisce un cliente tramite id.
-     *
-     * Se il cliente non esiste viene lanciata
-     * la NotFoundException personalizzata.
-     */
+
     public Cliente trovaPerId(Long id) {
 
         return clienteRepository.findById(id)
@@ -265,19 +245,15 @@ public class ClienteService {
                 );
     }
 
-    /*
-     * Modifica i dati di un cliente esistente.
-     */
+
     public ClienteResponseDTO modificaCliente(
             Long id,
             ClientePayloadDTO payload
     ) {
 
-        // Recupera il cliente da modificare.
         Cliente clienteTrovato =
                 trovaEntityPerId(id);
 
-        // Aggiorna i campi dell'entity.
         clienteTrovato.setRagioneSociale(
                 payload.ragioneSociale()
         );
@@ -330,7 +306,6 @@ public class ClienteService {
                 payload.tipoCliente()
         );
 
-        // Salva le modifiche nel database.
         Cliente clienteAggiornato =
                 clienteRepository.save(clienteTrovato);
 
@@ -339,9 +314,7 @@ public class ClienteService {
         );
     }
 
-    /*
-     * Elimina un cliente tramite id.
-     */
+
     public void eliminaCliente(Long id) {
 
         Cliente clienteTrovato =
@@ -350,27 +323,20 @@ public class ClienteService {
         clienteRepository.delete(clienteTrovato);
     }
 
-    /*
-     * Carica il logo aziendale su Cloudinary
-     * e salva nel cliente l'URL restituito.
-     */
+
     public ClienteResponseDTO caricaLogo(
             Long id,
             MultipartFile file
     ) throws IOException {
 
-        // Recupera il cliente.
         Cliente clienteTrovato =
                 trovaEntityPerId(id);
 
-        // Carica l'immagine su Cloudinary.
         String urlLogo =
                 cloudinaryService.uploadImage(file);
 
-        // Salva l'URL del logo nell'entity.
         clienteTrovato.setLogoAziendale(urlLogo);
 
-        // Aggiorna il cliente nel database.
         Cliente clienteAggiornato =
                 clienteRepository.save(clienteTrovato);
 
@@ -379,10 +345,7 @@ public class ClienteService {
         );
     }
 
-    /*
-     * Crea una Specification che ordina i clienti
-     * per nome della provincia della sede legale.
-     */
+
     private Specification<Cliente>
     ordinaPerProvinciaSedeLegale(
             Sort.Direction direzione
@@ -390,20 +353,13 @@ public class ClienteService {
 
         return (root, query, criteriaBuilder) -> {
 
-            /*
-             * Join:
-             * Cliente → Indirizzo.
-             */
             Join<Cliente, Indirizzo> indirizzoJoin =
                     root.join(
                             "indirizzi",
                             JoinType.LEFT
                     );
 
-            /*
-             * Del cliente consideriamo soltanto
-             * l'indirizzo di tipo SEDE_LEGALE.
-             */
+
             indirizzoJoin.on(
                     criteriaBuilder.equal(
                             indirizzoJoin.get(
@@ -413,39 +369,26 @@ public class ClienteService {
                     )
             );
 
-            /*
-             * Join:
-             * Indirizzo → Comune.
-             */
+
             Join<Indirizzo, Comune> comuneJoin =
                     indirizzoJoin.join(
                             "comune",
                             JoinType.LEFT
                     );
 
-            /*
-             * Join:
-             * Comune → Provincia.
-             */
+
             Join<Comune, Provincia> provinciaJoin =
                     comuneJoin.join(
                             "provincia",
                             JoinType.LEFT
                     );
 
-            /*
-             * L'entity Provincia utilizza il campo "name"
-             * per memorizzare il nome della provincia.
-             *
-             * lower rende l'ordinamento indipendente
-             * da maiuscole e minuscole.
-             */
+
             var nomeProvincia =
                     criteriaBuilder.lower(
                             provinciaJoin.get("name")
                     );
 
-            // Imposta l'ordinamento crescente o decrescente.
             if (direzione == Sort.Direction.DESC) {
 
                 query.orderBy(
@@ -463,25 +406,11 @@ public class ClienteService {
                 );
             }
 
-            /*
-             * Non viene aggiunta una condizione WHERE.
-             *
-             * Questa Specification serve esclusivamente
-             * per creare i join e impostare l'ordinamento.
-             */
             return criteriaBuilder.conjunction();
         };
     }
 
-    /*
-     * Normalizza il nome del campo ricevuto nell'URL.
-     *
-     * Esempi equivalenti:
-     * - dataInserimento
-     * - data_inserimento
-     * - data-inserimento
-     * - data inserimento
-     */
+
     private String normalizzaCampo(
             String campo
     ) {
@@ -500,10 +429,7 @@ public class ClienteService {
                 .toLowerCase();
     }
 
-    /*
-     * Converte il nome utilizzato nell'endpoint
-     * nel nome reale dell'attributo dell'entity Cliente.
-     */
+
     private String convertiCampoOrdinamento(
             String campoNormalizzato
     ) {
@@ -532,18 +458,11 @@ public class ClienteService {
         };
     }
 
-    /*
-     * Converte la direzione ricevuta dall'endpoint
-     * in un valore Sort.Direction.
-     */
+
     private Sort.Direction convertiDirezioneOrdinamento(
             String direzione
     ) {
 
-        /*
-         * Se non viene indicata una direzione,
-         * viene utilizzato l'ordinamento crescente.
-         */
         if (direzione == null || direzione.isBlank()) {
             return Sort.Direction.ASC;
         }
@@ -566,9 +485,6 @@ public class ClienteService {
         };
     }
 
-    /*
-     * Recupera direttamente l'entity Cliente tramite id.
-     */
     private Cliente trovaEntityPerId(Long id) {
 
         return clienteRepository.findById(id)
@@ -577,10 +493,6 @@ public class ClienteService {
                 );
     }
 
-    /*
-     * Converte l'entity Cliente
-     * nel DTO restituito dagli endpoint.
-     */
     private ClienteResponseDTO convertiInResponseDTO(
             Cliente cliente
     ) {
