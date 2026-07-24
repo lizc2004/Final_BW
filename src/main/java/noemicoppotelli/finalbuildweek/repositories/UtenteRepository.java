@@ -20,6 +20,6 @@ public interface UtenteRepository extends JpaRepository<Utente, Long> {
             String nome, Pageable pageable);
 
     boolean existsBy();
-
+    
     ;
 }

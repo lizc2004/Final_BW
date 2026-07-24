@@ -12,14 +12,14 @@ import noemicoppotelli.finalbuildweek.payloads.IndirizzoDTO;
 import noemicoppotelli.finalbuildweek.service.ClienteService;
 import noemicoppotelli.finalbuildweek.service.EmailService;
 import noemicoppotelli.finalbuildweek.service.IndirizzoService;
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.data.domain.Page;
-
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -48,7 +48,7 @@ public class ClienteController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ClienteResponseDTO salvaCliente(
             @Valid @RequestBody ClientePayloadDTO payload,
             BindingResult validationResult
@@ -272,4 +272,12 @@ public class ClienteController {
 
         emailService.inviaEmail(destinatario, body.oggetto(), body.messaggio());
     }
+
+    @GetMapping("/cerca")
+    public ResponseEntity<Cliente> cercaCliente(@RequestParam String query) {
+        Cliente cliente = clienteService.trovaPerEmail(query);
+        return ResponseEntity.ok(cliente);
+    }
 }
+
+
