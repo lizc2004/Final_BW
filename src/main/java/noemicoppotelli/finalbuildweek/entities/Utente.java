@@ -50,6 +50,17 @@ public class Utente implements UserDetails {
     @Builder.Default
     private Set<Ruolo> ruoli = new HashSet<>();
 
+
+    public Utente(String username, String email, String password,
+                  String nome, String cognome, Set<Ruolo> ruoli) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.nome = nome;
+        this.cognome = cognome;
+        this.ruoli = ruoli;
+    }
+
     // --- Spring Security ---
 
     @Override
