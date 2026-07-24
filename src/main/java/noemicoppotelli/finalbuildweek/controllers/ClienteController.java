@@ -274,9 +274,9 @@ public class ClienteController {
     }
 
     @GetMapping("/cerca")
-    public ResponseEntity<Cliente> cercaCliente(@RequestParam String query) {
-        Cliente cliente = clienteService.trovaPerEmail(query);
-        return ResponseEntity.ok(cliente);
+    public ResponseEntity<ClienteResponseDTO.ClienteResponseEmailDTO> cercaCliente(@RequestParam String query) {
+        Cliente cliente = clienteService.trovaPerEmail(query.trim());
+        return ResponseEntity.ok(new ClienteResponseDTO.ClienteResponseEmailDTO(cliente.getId(), cliente.getEmail(), cliente.getRagioneSociale()));
     }
 }
 
