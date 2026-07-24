@@ -510,25 +510,20 @@ public class ClienteService {
 
         return switch (campoNormalizzato) {
 
-            case "nome", "ragionesociale" ->
-                    "ragioneSociale";
+            case "nome", "ragionesociale" -> "ragioneSociale";
 
-            case "fatturato", "fatturatoannuale" ->
-                    "fatturatoAnnuale";
+            case "fatturato", "fatturatoannuale" -> "fatturatoAnnuale";
 
-            case "datainserimento" ->
-                    "dataInserimento";
+            case "datainserimento" -> "dataInserimento";
 
-            case "dataultimocontatto" ->
-                    "dataUltimoContatto";
+            case "dataultimocontatto" -> "dataUltimoContatto";
 
-            default ->
-                    throw new BadRequestException(
-                            "Campo di ordinamento non valido. "
-                                    + "Valori consentiti: nome, "
-                                    + "fatturato, dataInserimento, "
-                                    + "dataUltimoContatto, provincia."
-                    );
+            default -> throw new BadRequestException(
+                    "Campo di ordinamento non valido. "
+                            + "Valori consentiti: nome, "
+                            + "fatturato, dataInserimento, "
+                            + "dataUltimoContatto, provincia."
+            );
         };
     }
 
@@ -552,17 +547,14 @@ public class ClienteService {
                 direzione.trim().toLowerCase()
                 ) {
 
-            case "asc", "crescente" ->
-                    Sort.Direction.ASC;
+            case "asc", "crescente" -> Sort.Direction.ASC;
 
-            case "desc", "decrescente" ->
-                    Sort.Direction.DESC;
+            case "desc", "decrescente" -> Sort.Direction.DESC;
 
-            default ->
-                    throw new BadRequestException(
-                            "Direzione di ordinamento non valida. "
-                                    + "Utilizzare asc oppure desc."
-                    );
+            default -> throw new BadRequestException(
+                    "Direzione di ordinamento non valida. "
+                            + "Utilizzare asc oppure desc."
+            );
         };
     }
 
@@ -603,5 +595,10 @@ public class ClienteService {
                 cliente.getLogoAziendale(),
                 cliente.getTipoCliente()
         );
+    }
+
+    public Cliente trovaPerEmail(String email) {
+        return clienteRepository.findByEmailOrEmailContatto(email, email)
+                .orElseThrow(() -> new NotFoundException("Nessun cliente trovato con email: " + email));
     }
 }
