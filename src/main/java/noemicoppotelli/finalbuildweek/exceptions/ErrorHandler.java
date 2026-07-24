@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -87,6 +88,12 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorDTO handleMissingPart(MissingServletRequestPartException ex) {
         return new ErrorDTO("Parte mancante nella richiesta: " + ex.getRequestPartName(), LocalDateTime.now());
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    public ErrorDTO handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+        return new ErrorDTO("Metodo HTTP " + ex.getMethod() + " non supportato per questo endpoint", LocalDateTime.now());
     }
 
     @ExceptionHandler(BadCredentialsException.class)
