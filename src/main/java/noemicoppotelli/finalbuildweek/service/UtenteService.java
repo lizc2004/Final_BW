@@ -172,4 +172,8 @@ public class UtenteService {
         return utenteRepository.findAll(pageable);
     }
 
+
+    public boolean existBy() {
+        return this.utenteRepository.existsBy();
+    }
 }
