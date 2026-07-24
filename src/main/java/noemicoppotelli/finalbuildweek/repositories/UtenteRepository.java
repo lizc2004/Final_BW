@@ -18,4 +18,8 @@ public interface UtenteRepository extends JpaRepository<Utente, Long> {
 
     Page<Utente> findByNomeContainingIgnoreCase(
             String nome, Pageable pageable);
+
+    boolean existsBy();
+
+    ;
 }
