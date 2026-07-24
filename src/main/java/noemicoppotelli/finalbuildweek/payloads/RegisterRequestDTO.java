@@ -9,5 +9,4 @@ public class RegisterRequestDTO {
     private String password;
     private String nome;
     private String cognome;
-    private String ruolo;
 }
