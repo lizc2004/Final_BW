@@ -1,5 +1,6 @@
 package noemicoppotelli.finalbuildweek.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,6 +44,7 @@ public class Indirizzo {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "comune_id", nullable = false)
     @ToString.Exclude
+    @JsonIgnore
     private Comune comune;
 
     public Indirizzo(

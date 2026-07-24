@@ -20,43 +20,18 @@ import java.util.List;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Cliente {
 
-    /*
-     * Identificativo univoco del cliente.
-     *
-     * GenerationType.IDENTITY indica che il valore viene
-     * generato automaticamente dal database.
-     *
-     * @EqualsAndHashCode.Include specifica che l'id viene
-     * utilizzato nei metodi equals() e hashCode().
-     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Long id;
 
-    /*
-     * Nome o denominazione ufficiale dell'azienda.
-     *
-     * Il campo è obbligatorio.
-     */
     @Column(name = "ragione_sociale", nullable = false)
     private String ragioneSociale;
 
-    /*
-     * Email principale del cliente.
-     *
-     * Il campo è obbligatorio e non può essere duplicato
-     * tra clienti differenti.
-     */
+
     @Column(nullable = false, unique = true)
     private String email;
 
-    /*
-     * Partita IVA del cliente.
-     *
-     * Il valore deve essere univoco e può contenere
-     * al massimo 11 caratteri.
-     */
     @Column(name = "partita_iva", unique = true, length = 11)
     private String partitaIva;
 

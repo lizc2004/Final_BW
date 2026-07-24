@@ -1,5 +1,6 @@
 package noemicoppotelli.finalbuildweek.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -33,6 +34,7 @@ public class Fattura {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "cliente_id", nullable = false)
+    @JsonIgnoreProperties({"indirizzi"})
     private Cliente cliente;
 
     @ManyToOne(optional = false)
