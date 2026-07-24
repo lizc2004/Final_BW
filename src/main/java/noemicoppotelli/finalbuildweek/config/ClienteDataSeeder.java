@@ -21,7 +21,7 @@ import java.util.List;
  */
 @Component
 @RequiredArgsConstructor
-@Order(5)
+@Order(6)
 public class ClienteDataSeeder implements CommandLineRunner {
 
     private final ClienteRepository clienteRepository;

@@ -36,17 +36,9 @@ public class AuthService {
             throw new BadRequestException("Email già in uso!");
         }
 
-        String nomeRuolo = (request.getRuolo() != null && !request.getRuolo().isBlank())
-                ? request.getRuolo()
-                : "ROLE_USER";
-
-        if (!nomeRuolo.startsWith("ROLE_")) {
-            nomeRuolo = "ROLE_" + nomeRuolo.toUpperCase();
-        }
-
-        final String ruoloFinale = nomeRuolo;
-        Ruolo ruoloAssegnato = ruoloRepository.findByNome(ruoloFinale)
-                .orElseThrow(() -> new BadRequestException("inserire un ruolo valido!"));
+        Ruolo ruoloUser = ruoloRepository.findByNome("ROLE_USER")
+                .orElseThrow(() ->
+                        new BadRequestException("Ruolo ROLE_USER non trovato"));
 
         Utente utente = Utente.builder()
                 .username(request.getUsername())
@@ -54,11 +46,12 @@ public class AuthService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .nome(request.getNome())
                 .cognome(request.getCognome())
-                .ruoli(Set.of(ruoloAssegnato))
+                .ruoli(Set.of(ruoloUser))
                 .build();
 
         utenteRepository.save(utente);
-        return "Utente registrato con successo con ruolo: " + ruoloFinale;
+
+        return "Utente registrato con successo";
     }
 
     public AuthResponseDTO login(LoginRequestDTO request) {

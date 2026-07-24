@@ -3,11 +3,11 @@ package noemicoppotelli.finalbuildweek.controllers;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import noemicoppotelli.finalbuildweek.entities.Utente;
-import noemicoppotelli.finalbuildweek.payloads.PasswordChangeDTO;
-import noemicoppotelli.finalbuildweek.payloads.UtenteResponseDTO;
-import noemicoppotelli.finalbuildweek.payloads.UtenteUpdateDTO;
+import noemicoppotelli.finalbuildweek.exceptions.BadRequestException;
+import noemicoppotelli.finalbuildweek.payloads.*;
 import noemicoppotelli.finalbuildweek.service.UtenteService;
-import org.apache.coyote.BadRequestException;
+
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,6 +30,13 @@ public class UtenteController {
         return new UtenteResponseDTO(found.getId(), found.getUsername(),
                 found.getEmail(), found.getNome(), found.getCognome(),
                 found.getAvatar(), found.getRuoli());
+    }
+
+    @GetMapping
+    public Page<Utente> getAllUtenti(@RequestParam(defaultValue = "0") int page,
+                                     @RequestParam(defaultValue = "5") int size,
+                                     @RequestParam(required = false) String nome) {
+        return this.utenteService.getAllPerNome(page, size, nome);
     }
 
 
@@ -103,5 +110,20 @@ public class UtenteController {
             @AuthenticationPrincipal Utente utente
     ) {
         return utente;
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    @ResponseStatus(HttpStatus.CREATED)
+    public UtenteDTO save(
+            @Valid @RequestBody RegisterRequestDTO body
+    ) {
+        Utente utente = utenteService.save(body);
+        return new UtenteDTO(utente.getUsername(),
+                utente.getEmail(),
+                utente.getNome(),
+                utente.getCognome(),
+                utente.getAvatar(),
+                utente.getRuoli().toString());
     }
 }

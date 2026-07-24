@@ -12,6 +12,7 @@ import noemicoppotelli.finalbuildweek.payloads.IndirizzoDTO;
 import noemicoppotelli.finalbuildweek.service.ClienteService;
 import noemicoppotelli.finalbuildweek.service.EmailService;
 import noemicoppotelli.finalbuildweek.service.IndirizzoService;
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,17 +30,12 @@ import java.util.List;
 @RequestMapping("/clienti")
 public class ClienteController {
 
-    // Service che gestisce la logica relativa ai clienti.
     private final ClienteService clienteService;
 
-    // Service che gestisce la logica relativa agli indirizzi.
     private final IndirizzoService indirizzoService;
 
     private final EmailService emailService;
 
-    /*
-     * Dependency Injection tramite costruttore.
-     */
     public ClienteController(
             ClienteService clienteService,
             IndirizzoService indirizzoService,
@@ -50,14 +46,6 @@ public class ClienteController {
         this.emailService = emailService;
     }
 
-    /*
-     * Crea un nuovo cliente.
-     *
-     * Endpoint:
-     * POST /clienti
-     *
-     * Possono accedere USER e ADMIN.
-     */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('ADMIN')")
@@ -66,81 +54,70 @@ public class ClienteController {
             BindingResult validationResult
     ) {
 
-        // Verifica gli eventuali errori del DTO.
         controllaValidazione(validationResult);
 
         return clienteService.salvaCliente(payload);
     }
 
-    /*
-     * Restituisce tutti i clienti.
-     *
-     * Endpoint:
-     * GET /clienti
-     */
-    @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    public List<ClienteResponseDTO> trovaTutti() {
 
-        return clienteService.trovaTutti();
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public Page<ClienteResponseDTO> trovaTutti(
+
+            @RequestParam(defaultValue = "0")
+            int page,
+
+            // Numero di clienti presenti in ogni pagina.
+            @RequestParam(defaultValue = "5")
+            int size,
+
+            @RequestParam(defaultValue = "ragioneSociale")
+            String sortBy,
+
+            @RequestParam(defaultValue = "asc")
+            String direction
+    ) {
+
+        return clienteService.trovaTutti(
+                page,
+                size,
+                sortBy,
+                direction
+        );
     }
 
-    /*
-     * Filtra la lista dei clienti.
-     *
-     * Endpoint:
-     * GET /clienti/filtro
-     *
-     * Tutti i parametri sono facoltativi.
-     *
-     * Esempio:
-     * GET /clienti/filtro
-     * ?ragioneSociale=energia
-     * &fatturatoMin=10000
-     */
+
     @GetMapping("/filtro")
     @PreAuthorize("hasAnyRole('ADMIN')")
     public List<ClienteResponseDTO> filtraClienti(
 
-            // Parte della ragione sociale.
             @RequestParam(required = false)
             String ragioneSociale,
 
-            // Fatturato annuale minimo.
             @RequestParam(required = false)
             BigDecimal fatturatoMin,
 
-            // Fatturato annuale massimo.
             @RequestParam(required = false)
             BigDecimal fatturatoMax,
 
-            /*
-             * Data minima di inserimento.
-             *
-             * Formato:
-             * 2026-07-22T10:30:00
-             */
             @RequestParam(required = false)
             @DateTimeFormat(
                     iso = DateTimeFormat.ISO.DATE_TIME
             )
             LocalDateTime dataInserimentoDa,
 
-            // Data massima di inserimento.
             @RequestParam(required = false)
             @DateTimeFormat(
                     iso = DateTimeFormat.ISO.DATE_TIME
             )
             LocalDateTime dataInserimentoA,
 
-            // Data minima dell'ultimo contatto.
             @RequestParam(required = false)
             @DateTimeFormat(
                     iso = DateTimeFormat.ISO.DATE_TIME
             )
             LocalDateTime dataUltimoContattoDa,
 
-            // Data massima dell'ultimo contatto.
             @RequestParam(required = false)
             @DateTimeFormat(
                     iso = DateTimeFormat.ISO.DATE_TIME
@@ -159,28 +136,7 @@ public class ClienteController {
         );
     }
 
-    /*
-     * Ordina la lista dei clienti.
-     *
-     * Endpoint:
-     * GET /clienti/ordinamento
-     *
-     * Campi disponibili:
-     * - nome
-     * - fatturato
-     * - dataInserimento
-     * - dataUltimoContatto
-     * - provincia
-     *
-     * Direzioni:
-     * - asc
-     * - desc
-     *
-     * Esempio:
-     * GET /clienti/ordinamento
-     * ?campo=provincia
-     * &direzione=asc
-     */
+
     @GetMapping("/ordinamento")
     @PreAuthorize("hasAnyRole( 'ADMIN')")
     public List<ClienteResponseDTO> ordinaClienti(
@@ -198,12 +154,7 @@ public class ClienteController {
         );
     }
 
-    /*
-     * Restituisce un singolo cliente tramite id.
-     *
-     * Endpoint:
-     * GET /clienti/{id}
-     */
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole( 'ADMIN')")
     public Cliente trovaPerId(
@@ -213,14 +164,6 @@ public class ClienteController {
         return clienteService.trovaPerId(id);
     }
 
-    /*
-     * Modifica un cliente esistente.
-     *
-     * Endpoint:
-     * PUT /clienti/{id}
-     *
-     * Può accedere soltanto ADMIN.
-     */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ClienteResponseDTO modificaCliente(
@@ -237,14 +180,7 @@ public class ClienteController {
         );
     }
 
-    /*
-     * Elimina un cliente.
-     *
-     * Endpoint:
-     * DELETE /clienti/{id}
-     *
-     * Restituisce HTTP 204 No Content.
-     */
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('ADMIN')")
@@ -255,15 +191,7 @@ public class ClienteController {
         clienteService.eliminaCliente(id);
     }
 
-    /*
-     * Carica il logo aziendale del cliente su Cloudinary.
-     *
-     * Endpoint:
-     * POST /clienti/{id}/logo
-     *
-     * Il file deve essere inviato come multipart/form-data
-     * utilizzando la chiave "file".
-     */
+
     @PostMapping("/{id}/logo")
     @PreAuthorize("hasRole('ADMIN')")
     public ClienteResponseDTO caricaLogo(
@@ -277,12 +205,7 @@ public class ClienteController {
         );
     }
 
-    /*
-     * Crea un indirizzo associato a un cliente.
-     *
-     * Endpoint:
-     * POST /clienti/{clienteId}/indirizzi
-     */
+
     @PostMapping("/{clienteId}/indirizzi")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
@@ -300,12 +223,7 @@ public class ClienteController {
         );
     }
 
-    /*
-     * Recupera gli indirizzi associati a un cliente.
-     *
-     * Endpoint:
-     * GET /clienti/{clienteId}/indirizzi
-     */
+
     @GetMapping("/{clienteId}/indirizzi")
     @PreAuthorize("hasAnyRole( 'ADMIN')")
     public List<Indirizzo> trovaIndirizzi(
@@ -317,25 +235,16 @@ public class ClienteController {
         );
     }
 
-    /*
-     * Controlla gli errori prodotti dalla validazione.
-     *
-     * Viene riutilizzato negli endpoint che ricevono
-     * un body annotato con @Valid.
-     */
+
     private void controllaValidazione(
             BindingResult validationResult
     ) {
 
-        // Se non ci sono errori, termina il metodo.
         if (!validationResult.hasErrors()) {
             return;
         }
 
-        /*
-         * Estrae tutti i messaggi di errore
-         * dai campi che non hanno superato la validazione.
-         */
+
         List<String> errorsList = validationResult
                 .getFieldErrors()
                 .stream()
@@ -345,11 +254,9 @@ public class ClienteController {
                 )
                 .toList();
 
-        // Lancia l'eccezione personalizzata.
         throw new ValidationException(errorsList);
     }
 
-    // POST /clienti/{id}/email
     @PostMapping("/{id}/email")
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.OK)
@@ -372,3 +279,5 @@ public class ClienteController {
         return ResponseEntity.ok(cliente);
     }
 }
+
+
