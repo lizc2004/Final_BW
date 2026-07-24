@@ -2,6 +2,7 @@ package noemicoppotelli.finalbuildweek.service;
 
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.transaction.Transactional;
 import noemicoppotelli.finalbuildweek.entities.Cliente;
 import noemicoppotelli.finalbuildweek.entities.Comune;
 import noemicoppotelli.finalbuildweek.entities.Indirizzo;
@@ -12,6 +13,8 @@ import noemicoppotelli.finalbuildweek.exceptions.NotFoundException;
 import noemicoppotelli.finalbuildweek.payloads.ClientePayloadDTO;
 import noemicoppotelli.finalbuildweek.payloads.ClienteResponseDTO;
 import noemicoppotelli.finalbuildweek.repositories.ClienteRepository;
+import noemicoppotelli.finalbuildweek.repositories.ComuneRepository;
+import noemicoppotelli.finalbuildweek.repositories.IndirizzoRepository;
 import noemicoppotelli.finalbuildweek.specifications.ClienteSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,51 +33,66 @@ import java.util.List;
 public class ClienteService {
 
     private final ClienteRepository clienteRepository;
-
+    private final ComuneRepository comuneRepository;
+    private final IndirizzoRepository indirizzoRepository;
     private final CloudinaryService cloudinaryService;
 
     public ClienteService(
             ClienteRepository clienteRepository,
+            ComuneRepository comuneRepository,
+            IndirizzoRepository indirizzoRepository,
             CloudinaryService cloudinaryService
     ) {
         this.clienteRepository = clienteRepository;
+        this.comuneRepository = comuneRepository;
+        this.indirizzoRepository = indirizzoRepository;
         this.cloudinaryService = cloudinaryService;
     }
 
+    // CREAZIONE CLIENTE
 
-    public ClienteResponseDTO salvaCliente(
-            ClientePayloadDTO payload
-    ) {
+    @Transactional
+    public ClienteResponseDTO salvaCliente(ClientePayloadDTO payload) {
 
+        Comune comune = trovaComunePerId(payload.comuneId());
 
         Cliente nuovoCliente = Cliente.builder()
                 .ragioneSociale(payload.ragioneSociale())
                 .email(payload.email())
                 .partitaIva(payload.partitaIva())
                 .codiceFiscale(payload.codiceFiscale())
-                .dataUltimoContatto(
-                        payload.dataUltimoContatto()
-                )
-                .fatturatoAnnuale(
-                        payload.fatturatoAnnuale()
-                )
+                .dataUltimoContatto(payload.dataUltimoContatto())
+                .fatturatoAnnuale(payload.fatturatoAnnuale())
                 .pec(payload.pec())
                 .telefono(payload.telefono())
                 .emailContatto(payload.emailContatto())
                 .nomeContatto(payload.nomeContatto())
                 .cognomeContatto(payload.cognomeContatto())
-                .telefonoContatto(
-                        payload.telefonoContatto()
-                )
+                .telefonoContatto(payload.telefonoContatto())
                 .tipoCliente(payload.tipoCliente())
                 .build();
 
         Cliente clienteSalvato =
                 clienteRepository.save(nuovoCliente);
 
+        Indirizzo sedeLegale = new Indirizzo(
+                clienteSalvato,
+                TipoIndirizzo.SEDE_LEGALE,
+                payload.via(),
+                payload.civico(),
+                payload.cap(),
+                comune
+        );
+
+        Indirizzo indirizzoSalvato =
+                indirizzoRepository.save(sedeLegale);
+
+        clienteSalvato.getIndirizzi().add(indirizzoSalvato);
+
         return convertiInResponseDTO(clienteSalvato);
     }
 
+    // PAGINAZIONE
 
     public Page<ClienteResponseDTO> trovaTutti(
             int page,
@@ -99,18 +117,13 @@ public class ClienteService {
                 normalizzaCampo(sortBy);
 
         String campoEntity =
-                convertiCampoOrdinamento(
-                        campoNormalizzato
-                );
+                convertiCampoOrdinamento(campoNormalizzato);
 
         Sort.Direction sortDirection =
                 convertiDirezioneOrdinamento(direction);
 
         Sort.Order ordine =
-                new Sort.Order(
-                        sortDirection,
-                        campoEntity
-                );
+                new Sort.Order(sortDirection, campoEntity);
 
         if (campoEntity.equals("ragioneSociale")) {
             ordine = ordine.ignoreCase();
@@ -122,12 +135,12 @@ public class ClienteService {
                 Sort.by(ordine)
         );
 
-
         return clienteRepository
                 .findAll(pageable)
                 .map(this::convertiInResponseDTO);
     }
 
+    // FILTRI
 
     public List<ClienteResponseDTO> filtraClienti(
             String ragioneSociale,
@@ -179,12 +192,14 @@ public class ClienteService {
                                         )
                         );
 
-
-        return clienteRepository.findAll(specification)
+        return clienteRepository
+                .findAll(specification)
                 .stream()
                 .map(this::convertiInResponseDTO)
                 .toList();
     }
+
+    // ORDINAMENTO
 
     public List<ClienteResponseDTO> ordinaClienti(
             String campo,
@@ -197,13 +212,10 @@ public class ClienteService {
         Sort.Direction sortDirection =
                 convertiDirezioneOrdinamento(direzione);
 
-
         if (campoNormalizzato.equals("provincia")) {
 
             Specification<Cliente> ordinamentoProvincia =
-                    ordinaPerProvinciaSedeLegale(
-                            sortDirection
-                    );
+                    ordinaPerProvinciaSedeLegale(sortDirection);
 
             return clienteRepository
                     .findAll(ordinamentoProvincia)
@@ -212,17 +224,11 @@ public class ClienteService {
                     .toList();
         }
 
-
         String campoEntity =
-                convertiCampoOrdinamento(
-                        campoNormalizzato
-                );
+                convertiCampoOrdinamento(campoNormalizzato);
 
         Sort.Order ordine =
-                new Sort.Order(
-                        sortDirection,
-                        campoEntity
-                );
+                new Sort.Order(sortDirection, campoEntity);
 
         if (campoEntity.equals("ragioneSociale")) {
             ordine = ordine.ignoreCase();
@@ -230,22 +236,27 @@ public class ClienteService {
 
         Sort sort = Sort.by(ordine);
 
-        return clienteRepository.findAll(sort)
+        return clienteRepository
+                .findAll(sort)
                 .stream()
                 .map(this::convertiInResponseDTO)
                 .toList();
     }
 
+    // RICERCA PER ID
+
 
     public Cliente trovaPerId(Long id) {
-
-        return clienteRepository.findById(id)
+        return clienteRepository
+                .findById(id)
                 .orElseThrow(
                         () -> new NotFoundException(id)
                 );
     }
 
+    // MODIFICA CLIENTE
 
+    @Transactional
     public ClienteResponseDTO modificaCliente(
             Long id,
             ClientePayloadDTO payload
@@ -253,6 +264,9 @@ public class ClienteService {
 
         Cliente clienteTrovato =
                 trovaEntityPerId(id);
+
+        Comune comune =
+                trovaComunePerId(payload.comuneId());
 
         clienteTrovato.setRagioneSociale(
                 payload.ragioneSociale()
@@ -309,11 +323,53 @@ public class ClienteService {
         Cliente clienteAggiornato =
                 clienteRepository.save(clienteTrovato);
 
-        return convertiInResponseDTO(
-                clienteAggiornato
-        );
+        /* Cerchiamo l'indirizzo di tipo SEDE_LEGALE già associato.
+         * Se esiste lo aggiorniamo.
+         * Se non esiste lo creiamo.
+         */
+        Indirizzo sedeLegale = clienteTrovato
+                .getIndirizzi()
+                .stream()
+                .filter(indirizzo ->
+                        indirizzo.getTipoIndirizzo()
+                                == TipoIndirizzo.SEDE_LEGALE
+                )
+                .findFirst()
+                .orElse(null);
+
+        if (sedeLegale == null) {
+
+            sedeLegale = new Indirizzo(
+                    clienteAggiornato,
+                    TipoIndirizzo.SEDE_LEGALE,
+                    payload.via(),
+                    payload.civico(),
+                    payload.cap(),
+                    comune
+            );
+
+            Indirizzo indirizzoSalvato =
+                    indirizzoRepository.save(sedeLegale);
+
+            clienteAggiornato
+                    .getIndirizzi()
+                    .add(indirizzoSalvato);
+
+        } else {
+
+            sedeLegale.setVia(payload.via());
+            sedeLegale.setCivico(payload.civico());
+            sedeLegale.setCap(payload.cap());
+            sedeLegale.setComune(comune);
+            sedeLegale.setLocalita(comune.getNome());
+
+            indirizzoRepository.save(sedeLegale);
+        }
+
+        return convertiInResponseDTO(clienteAggiornato);
     }
 
+    // ELIMINAZIONE
 
     public void eliminaCliente(Long id) {
 
@@ -323,6 +379,7 @@ public class ClienteService {
         clienteRepository.delete(clienteTrovato);
     }
 
+    // CARICAMENTO LOGO
 
     public ClienteResponseDTO caricaLogo(
             Long id,
@@ -340,14 +397,12 @@ public class ClienteService {
         Cliente clienteAggiornato =
                 clienteRepository.save(clienteTrovato);
 
-        return convertiInResponseDTO(
-                clienteAggiornato
-        );
+        return convertiInResponseDTO(clienteAggiornato);
     }
 
+    // ORDINAMENTO PER PROVINCIA
 
-    private Specification<Cliente>
-    ordinaPerProvinciaSedeLegale(
+    private Specification<Cliente> ordinaPerProvinciaSedeLegale(
             Sort.Direction direzione
     ) {
 
@@ -359,16 +414,12 @@ public class ClienteService {
                             JoinType.LEFT
                     );
 
-
             indirizzoJoin.on(
                     criteriaBuilder.equal(
-                            indirizzoJoin.get(
-                                    "tipoIndirizzo"
-                            ),
+                            indirizzoJoin.get("tipoIndirizzo"),
                             TipoIndirizzo.SEDE_LEGALE
                     )
             );
-
 
             Join<Indirizzo, Comune> comuneJoin =
                     indirizzoJoin.join(
@@ -376,13 +427,11 @@ public class ClienteService {
                             JoinType.LEFT
                     );
 
-
             Join<Comune, Provincia> provinciaJoin =
                     comuneJoin.join(
                             "provincia",
                             JoinType.LEFT
                     );
-
 
             var nomeProvincia =
                     criteriaBuilder.lower(
@@ -392,17 +441,13 @@ public class ClienteService {
             if (direzione == Sort.Direction.DESC) {
 
                 query.orderBy(
-                        criteriaBuilder.desc(
-                                nomeProvincia
-                        )
+                        criteriaBuilder.desc(nomeProvincia)
                 );
 
             } else {
 
                 query.orderBy(
-                        criteriaBuilder.asc(
-                                nomeProvincia
-                        )
+                        criteriaBuilder.asc(nomeProvincia)
                 );
             }
 
@@ -410,10 +455,9 @@ public class ClienteService {
         };
     }
 
+    // NORMALIZZAZIONE CAMPO
 
-    private String normalizzaCampo(
-            String campo
-    ) {
+    private String normalizzaCampo(String campo) {
 
         if (campo == null || campo.isBlank()) {
             throw new BadRequestException(
@@ -429,6 +473,7 @@ public class ClienteService {
                 .toLowerCase();
     }
 
+    // CONVERSIONE CAMPO DI ORDINAMENTO
 
     private String convertiCampoOrdinamento(
             String campoNormalizzato
@@ -458,6 +503,7 @@ public class ClienteService {
         };
     }
 
+    // CONVERSIONE DIREZIONE
 
     private Sort.Direction convertiDirezioneOrdinamento(
             String direzione
@@ -485,17 +531,61 @@ public class ClienteService {
         };
     }
 
+    // TROVA CLIENTE ENTITY
+
     private Cliente trovaEntityPerId(Long id) {
 
-        return clienteRepository.findById(id)
+        return clienteRepository
+                .findById(id)
                 .orElseThrow(
                         () -> new NotFoundException(id)
                 );
     }
 
+    // TROVA COMUNE
+
+    private Comune trovaComunePerId(Long comuneId) {
+
+        if (comuneId == null) {
+            throw new BadRequestException(
+                    "Il comune della sede legale è obbligatorio."
+            );
+        }
+
+        return comuneRepository
+                .findById(comuneId)
+                .orElseThrow(
+                        () -> new BadRequestException(
+                                "Comune con id "
+                                        + comuneId
+                                        + " non trovato."
+                        )
+                );
+    }
+
+    // CONVERSIONE RESPONSE DTO
+
+
     private ClienteResponseDTO convertiInResponseDTO(
             Cliente cliente
     ) {
+
+        String provincia = cliente
+                .getIndirizzi()
+                .stream()
+                .filter(indirizzo ->
+                        indirizzo.getTipoIndirizzo()
+                                == TipoIndirizzo.SEDE_LEGALE
+                )
+                .map(Indirizzo::getComune)
+                .filter(comune -> comune != null)
+                .map(Comune::getProvincia)
+                .filter(provinciaTrovata ->
+                        provinciaTrovata != null
+                )
+                .map(Provincia::getName)
+                .findFirst()
+                .orElse(null);
 
         return new ClienteResponseDTO(
                 cliente.getId(),
@@ -513,7 +603,8 @@ public class ClienteService {
                 cliente.getCognomeContatto(),
                 cliente.getTelefonoContatto(),
                 cliente.getLogoAziendale(),
-                cliente.getTipoCliente()
+                cliente.getTipoCliente(),
+                provincia
         );
     }
 }

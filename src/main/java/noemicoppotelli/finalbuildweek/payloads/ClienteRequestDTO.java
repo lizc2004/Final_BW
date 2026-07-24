@@ -50,4 +50,16 @@ public class ClienteRequestDTO {
 
     @NotNull
     private TipoCliente tipoCliente;
+
+    @NotBlank
+    private String via;
+
+    @NotBlank
+    private String civico;
+
+    @NotBlank
+    private String cap;
+
+    @NotNull
+    private Long comuneId;
 }

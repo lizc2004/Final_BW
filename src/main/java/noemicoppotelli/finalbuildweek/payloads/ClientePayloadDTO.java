@@ -44,6 +44,18 @@ public record ClientePayloadDTO(
         String telefonoContatto,
 
         @NotNull(message = "Il tipo cliente è obbligatorio")
-        TipoCliente tipoCliente
+        TipoCliente tipoCliente,
+
+        @NotBlank(message = "La via è obbligatoria")
+        String via,
+
+        @NotBlank(message = "Il numero civico è obbligatorio")
+        String civico,
+
+        @NotBlank(message = "Il CAP è obbligatorio")
+        String cap,
+
+        @NotNull(message = "Il comune è obbligatorio")
+        Long comuneId
 ) {
 }

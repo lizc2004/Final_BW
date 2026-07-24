@@ -5,6 +5,8 @@ import noemicoppotelli.finalbuildweek.enums.TipoCliente;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+
+
 public record ClienteResponseDTO(
 
         Long id,
@@ -22,6 +24,7 @@ public record ClienteResponseDTO(
         String cognomeContatto,
         String telefonoContatto,
         String logoAziendale,
-        TipoCliente tipoCliente
+        TipoCliente tipoCliente,
+        String provincia
 ) {
 }
