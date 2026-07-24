@@ -6,6 +6,7 @@ import noemicoppotelli.finalbuildweek.entities.Utente;
 import noemicoppotelli.finalbuildweek.exceptions.BadRequestException;
 import noemicoppotelli.finalbuildweek.exceptions.NotFoundException;
 import noemicoppotelli.finalbuildweek.payloads.PasswordChangeDTO;
+import noemicoppotelli.finalbuildweek.payloads.RegisterRequestDTO;
 import noemicoppotelli.finalbuildweek.payloads.UtenteUpdateDTO;
 import noemicoppotelli.finalbuildweek.repositories.RuoloRepository;
 import noemicoppotelli.finalbuildweek.repositories.UtenteRepository;
@@ -16,6 +17,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -175,5 +179,30 @@ public class UtenteService {
 
     public boolean existBy() {
         return this.utenteRepository.existsBy();
+    }
+
+
+    @Transactional
+    public Utente save(RegisterRequestDTO body) {
+        if (utenteRepository.existsByUsername(body.getUsername())) {
+            throw new BadRequestException(
+                    "Username già utilizzato"
+            );
+        }
+        if (utenteRepository.existsByEmail(body.getEmail())) {
+            throw new BadRequestException(
+                    "Email già utilizzata"
+            );
+        }
+        Ruolo ruoloUser =
+                ruoloRepository.findByNome("ROLE_USER")
+                        .orElseThrow(
+                                () -> new RuntimeException(
+                                        "Ruolo USER non trovato"
+                                )
+                        );
+        Utente newUtente = new Utente(body.getUsername(), body.getEmail(), body.getPassword(),
+                body.getNome(), body.getCognome(), Set.of(ruoloUser));
+        return utenteRepository.save(newUtente);
     }
 }
